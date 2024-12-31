@@ -391,8 +391,8 @@ ax.set_facecolor(background_color)
 plt.hist(implied_prices, bins=20, alpha=0.7, color="blue", edgecolor="white")
 
 # Add vertical lines for percentiles and current price
-plt.axvline(percentile_10, color="yellow", linestyle="--", linewidth=2, label="10% Percentile")
-plt.axvline(percentile_90, color="green", linestyle="--", linewidth=2, label="90% Percentile")
+plt.axvline(percentile_10, color="yellow", linestyle="--", linewidth=2, label="10% Perzentil")
+plt.axvline(percentile_90, color="green", linestyle="--", linewidth=2, label="90% Perzentil")
 plt.axvline(current_share_price, color="red", linestyle="-", linewidth=2, label="Aktueller Kurs")
 
 # Add annotations
