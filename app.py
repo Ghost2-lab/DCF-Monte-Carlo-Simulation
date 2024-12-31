@@ -443,9 +443,9 @@ pie_data = pd.DataFrame({
 
 # Create the pie chart
 pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
-    theta="Percentage:Q",
+    theta="Prozentsatz:Q",
     color="Variable:N",
-    tooltip=["Variable:N", "Percentage:Q"]
+    tooltip=["Variable:N", "Prozentsatz:Q"]
 ).properties(
     title=f"Varianzbeitrag - {valuation_year}. Jahr",
     width=400,
