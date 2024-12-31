@@ -3,7 +3,8 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import altair as alt
+
 
 
 # --------------------------------------------
@@ -376,39 +377,48 @@ cols[1].write(f"Bewertung: {valuation}", unsafe_allow_html=True)
 cols = st.columns(2)
 cols[0].write(f"⌀ impliziter Aktienkurs: {mean_implied_price:.2f}")
 cols[1].write(f"Standardabweichung: {std_implied_price:.2f}")
+# Prepare the data for Altair
+hist_data = pd.DataFrame({"Implied Prices": implied_prices})
 
 # Calculate percentiles
 percentile_10 = np.percentile(implied_prices, 10)
 percentile_90 = np.percentile(implied_prices, 90)
 
-plt.style.use("dark_background")
-background_color = "#262730"
-plt.figure(figsize=(8, 8), facecolor="#0E1117")
-ax = plt.gca()
-ax.set_facecolor(background_color)
+# Define the histogram with percentile lines
+hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
+    alt.X("Implied Prices:Q", bin=alt.Bin(maxbins=20), title="Implizierter Aktienkurs"),
+    alt.Y("count():Q", title="Häufigkeit"),
+    tooltip=["count()"]
+).properties(
+    title=f"Histogramm der impliziten Aktienkurse im Jahr {valuation_year}",
+    width=600,
+    height=400
+)
 
-# Histogram
-plt.hist(implied_prices, bins=20, alpha=0.7, color="blue", edgecolor="white")
 
-# Add vertical lines for percentiles and current price
-plt.axvline(percentile_10, color="yellow", linestyle="--", linewidth=2, label="10% Perzentil")
-plt.axvline(percentile_90, color="green", linestyle="--", linewidth=2, label="90% Perzentil")
-plt.axvline(current_share_price, color="red", linestyle="-", linewidth=2, label="Aktueller Kurs")
+# Data for vertical lines with labels
+line_data = pd.DataFrame({
+    "Position": [percentile_10, percentile_90, current_share_price],
+    "Label": ["10-Perzentile", "90-Perzentile", "Heutiger Preis"],
+    "Color": ["yellow", "green", "red"]
+})
 
-# Add annotations
-plt.text(percentile_10, plt.gca().get_ylim()[1] * 0.8, f"{percentile_10:.2f}", color="yellow", fontsize=10)
-plt.text(percentile_90, plt.gca().get_ylim()[1] * 0.8, f"{percentile_90:.2f}", color="green", fontsize=10)
-plt.text(current_share_price, plt.gca().get_ylim()[1] * 0.8, f"{current_share_price:.2f}", color="red", fontsize=10)
+# Add vertical lines
+vertical_lines = alt.Chart(line_data).mark_rule(strokeDash=[5, 5]).encode(
+    x=alt.X("Position:Q", title="Implied Prices"),
+    color=alt.Color("Color:N", scale=None, legend=None),  # Custom colors
+    tooltip=["Label:N", "Position:Q"]  # Add tooltips for better interactivity
+)
 
-# Titles and labels
-plt.title(f"Histogramm der impliziten Aktienkurse im Jahr {valuation_year}", color="white")
-plt.xlabel("Implizierter Aktienkurs", color="white")
-plt.ylabel("Häufigkeit", color="white")
-plt.legend(loc="upper right", facecolor=background_color)
-plt.grid(color="gray", linestyle="--", linewidth=0.5)
+# Create a custom legend using points
+legend = alt.Chart(line_data).mark_point(size=100).encode(
+    y=alt.Y("Label:N", axis=alt.Axis(title="Legend", labels=True)),
+    color=alt.Color("Color:N", scale=None)  # Match custom colors
+).properties(width=150)
 
-# Render the plot
-st.pyplot(plt)
+# Combine histogram, vertical lines, and legend
+st.altair_chart(hist + vertical_lines,use_container_width=True)
+
 
 # Sensitivity Pie Chart
 st.subheader("Sensitivitätsanalyse")
@@ -425,19 +435,26 @@ variances = [
 total_variance = sum(variances)
 percentages = [(var / total_variance) * 100 if total_variance != 0 else 0 for var in variances]
 
-plt.figure(figsize=(6, 6), facecolor="#0E1117")
-ax = plt.gca()
-ax.set_facecolor(background_color)
-custom_colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#A1FF33", "#33A1FF", "#FFC133"]
-plt.pie(
-    percentages,
-    labels=variables,
-    autopct="%1.0f%%",
-    startangle=90,
-    colors=custom_colors,
+# Prepare data for pie chart
+pie_data = pd.DataFrame({
+    "Variable": ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"],
+    "Percentage": percentages
+})
+
+# Create the pie chart
+pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
+    theta="Percentage:Q",
+    color="Variable:N",
+    tooltip=["Variable:N", "Percentage:Q"]
+).properties(
+    title=f"Varianzbeitrag - {valuation_year}. Jahr",
+    width=400,
+    height=400
 )
-plt.title(f"Varianzbeitrag - {valuation_year}. Jahr", color="white")
-st.pyplot(plt)
+
+st.altair_chart(pie_chart, use_container_width=True)
+
+
 
 # --------------------------------------------
 # Sidebar
