@@ -438,7 +438,7 @@ percentages = [(var / total_variance) * 100 if total_variance != 0 else 0 for va
 # Prepare data for pie chart
 pie_data = pd.DataFrame({
     "Variable": ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"],
-    "Percentage": percentages
+    "Prozentsatz": percentages
 })
 
 # Create the pie chart
@@ -463,7 +463,7 @@ st.sidebar.title(f"Aktie: {ticker_symbol}")
 st.sidebar.write(f"Heutiger Aktienkurs: {current_share_price:.2f}")
 
 # Sidebar Classic DCF
-st.sidebar.header("Classic DCF")
+st.sidebar.header("Klassischer DCF")
 st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
 st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
 
