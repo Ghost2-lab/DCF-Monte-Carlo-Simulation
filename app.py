@@ -10,7 +10,7 @@ import altair as alt
 # --------------------------------------------
 # Section 1: Gather Data
 # --------------------------------------------
-st.title("Monte Carlo Simulation - DCF")
+st.title("DCF - Monte Carlo Simulation")
 st.header("Schritt 1 - Daten aus yfinance sammeln:")
 
 # # Replace text_input with selectbox to choose exactly one ticker
