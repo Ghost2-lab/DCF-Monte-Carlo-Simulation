@@ -377,16 +377,37 @@ cols = st.columns(2)
 cols[0].write(f"⌀ impliziter Aktienkurs: {mean_implied_price:.2f}")
 cols[1].write(f"Standardabweichung: {std_implied_price:.2f}")
 
+# Calculate percentiles
+percentile_10 = np.percentile(implied_prices, 10)
+percentile_90 = np.percentile(implied_prices, 90)
+
 plt.style.use("dark_background")
 background_color = "#262730"
-plt.figure(figsize=(6, 6), facecolor="#0E1117")
+plt.figure(figsize=(8, 8), facecolor="#0E1117")
 ax = plt.gca()
 ax.set_facecolor(background_color)
+
+# Histogram
 plt.hist(implied_prices, bins=20, alpha=0.7, color="blue", edgecolor="white")
+
+# Add vertical lines for percentiles and current price
+plt.axvline(percentile_10, color="yellow", linestyle="--", linewidth=2, label="10% Percentile")
+plt.axvline(percentile_90, color="green", linestyle="--", linewidth=2, label="90% Percentile")
+plt.axvline(current_share_price, color="red", linestyle="-", linewidth=2, label="Aktueller Kurs")
+
+# Add annotations
+plt.text(percentile_10, plt.gca().get_ylim()[1] * 0.8, f"{percentile_10:.2f}", color="yellow", fontsize=10)
+plt.text(percentile_90, plt.gca().get_ylim()[1] * 0.8, f"{percentile_90:.2f}", color="green", fontsize=10)
+plt.text(current_share_price, plt.gca().get_ylim()[1] * 0.8, f"{current_share_price:.2f}", color="red", fontsize=10)
+
+# Titles and labels
 plt.title(f"Histogramm der impliziten Aktienkurse im Jahr {valuation_year}", color="white")
 plt.xlabel("Implizierter Aktienkurs", color="white")
 plt.ylabel("Häufigkeit", color="white")
+plt.legend(loc="upper right", facecolor=background_color)
 plt.grid(color="gray", linestyle="--", linewidth=0.5)
+
+# Render the plot
 st.pyplot(plt)
 
 # Sensitivity Pie Chart
