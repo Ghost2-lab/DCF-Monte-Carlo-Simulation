@@ -366,9 +366,9 @@ std_implied_price = np.std(implied_prices)
 
 st.subheader(f"Prognose für Jahr {valuation_year}")
 if mean_implied_price > current_share_price:
-    valuation = '<span style="color:green;">***Unterbewertet***</span>'
+    valuation = '<span style="color:green;">***unterbewertet***</span>'
 else:
-    valuation = '<span style="color:red;">***Überbewertet***</span>'
+    valuation = '<span style="color:red;">***überbewertet***</span>'
 
 cols = st.columns(2)
 cols[0].write(f"Heutiger Aktienkurs: {current_share_price:.2f}")
@@ -486,3 +486,10 @@ st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
 st.sidebar.header("Classic DCF")
 st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
 st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
+
+
+
+
+
+
+#st.sidebar.write(f"{valuation}", unsafe_allow_html=True)
