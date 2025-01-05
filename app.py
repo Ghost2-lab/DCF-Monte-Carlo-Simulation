@@ -10,7 +10,7 @@ import altair as alt
 # --------------------------------------------
 # Section 1: Gather Data
 # --------------------------------------------
-st.title("DCF - Monte Carlo Simulation")
+st.title("Monte Carlo Simulation - DCF")
 st.header("Schritt 1 - Daten aus yfinance sammeln:")
 
 # # Replace text_input with selectbox to choose exactly one ticker
@@ -257,7 +257,7 @@ def get_distribution_params_triangular(name, default_left, default_mode, default
 
 cols = st.columns(2)
 n_simulations = cols[0].number_input("Anzahl Simulationen:", value=1000, min_value=1)
-valuation_year = cols[1].selectbox("Bewertungsjahr auswählen:", [5, 10])
+valuation_year = cols[1].selectbox("Bewertungsjahr auswählen:", [5, 10], index=1)
 
 with st.expander("Verteilungsparameter anpassen"):
     st.markdown("### Normal-Verteilung (Umsatzwachstum)")
@@ -377,12 +377,15 @@ cols[1].write(f"Bewertung: {valuation}", unsafe_allow_html=True)
 cols = st.columns(2)
 cols[0].write(f"⌀ impliziter Aktienkurs: {mean_implied_price:.2f}")
 cols[1].write(f"Standardabweichung: {std_implied_price:.2f}")
+
 # Prepare the data for Altair
 hist_data = pd.DataFrame({"Implied Prices": implied_prices})
 
 # Calculate percentiles
 percentile_10 = np.percentile(implied_prices, 10)
 percentile_90 = np.percentile(implied_prices, 90)
+current_price_percentile = (np.sum(np.array(implied_prices) < current_share_price) / len(implied_prices)) * 100
+
 
 # Define the histogram with percentile lines
 hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
@@ -418,7 +421,8 @@ legend = alt.Chart(line_data).mark_point(size=100).encode(
 
 # Combine histogram, vertical lines, and legend
 st.altair_chart(hist + vertical_lines,use_container_width=True)
-
+# Display current price percentile
+st.write(f"Der heutige Aktienkurs liegt im {current_price_percentile:.2f}. Perzentil des Histogramms.")
 
 # Sensitivity Pie Chart
 st.subheader("Sensitivitätsanalyse")
@@ -438,14 +442,14 @@ percentages = [(var / total_variance) * 100 if total_variance != 0 else 0 for va
 # Prepare data for pie chart
 pie_data = pd.DataFrame({
     "Variable": ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"],
-    "Prozentsatz": percentages
+    "Percentage": percentages
 })
 
 # Create the pie chart
 pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
-    theta="Prozentsatz:Q",
+    theta="Percentage:Q",
     color="Variable:N",
-    tooltip=["Variable:N", "Prozentsatz:Q"]
+    tooltip=["Variable:N", "Percentage:Q"]
 ).properties(
     title=f"Varianzbeitrag - {valuation_year}. Jahr",
     width=400,
@@ -456,20 +460,29 @@ st.altair_chart(pie_chart, use_container_width=True)
 
 
 
+
+
 # --------------------------------------------
 # Sidebar
 # --------------------------------------------
 st.sidebar.title(f"Aktie: {ticker_symbol}")
 st.sidebar.write(f"Heutiger Aktienkurs: {current_share_price:.2f}")
-
-# Sidebar Classic DCF
-st.sidebar.header("Klassischer DCF")
-st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
-st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
-
+if mean_implied_price < current_share_price:
+    st.sidebar.write(
+        f"Basierend auf den getroffenen Annahmen und Investitionszeitraum von {valuation_year} Jahren ist die Aktie mit einer Wahrscheinlichkeit von {current_price_percentile:.2f}% {valuation}.",
+        unsafe_allow_html=True,
+    )
+else:
+    st.sidebar.write(
+        f"Basierend auf den getroffenen Annahmen und Investitionszeitraum von {valuation_year} Jahren ist die Aktie mit einer Wahrscheinlichkeit von {100 - current_price_percentile:.2f}% {valuation}.",
+        unsafe_allow_html=True,
+    )
 # Sidebar Monte Carlo Simulation
 st.sidebar.header("Monte Carlo Simulation")
 st.sidebar.write(f"Prognose für Jahr {valuation_year}")
 st.sidebar.write(f"⌀implizierter Aktienkurs: {mean_implied_price:.2f}")
 st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
-st.sidebar.write(f"{valuation}", unsafe_allow_html=True)
+# Sidebar Classic DCF
+st.sidebar.header("Classic DCF")
+st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
+st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
