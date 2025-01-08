@@ -30,7 +30,7 @@ st.header("Schritt 1 - Daten aus yfinance sammeln:")
 # # Replace text_input with selectbox to choose exactly one ticker
 # all_tickers = ["BMW.DE", "VOW3.DE", "MBG.DE"]
 # ticker_symbol = st.selectbox("Wähle einen Ticker aus:", all_tickers, index=2)
-ticker_symbol = st.text_input("Aktien Ticker-Symbol eingeben (z.B. AAPL, MSFT, MBG.DE, BMW.DE, VOW3.DE ):", "MBG.DE")
+ticker_symbol = st.text_input("Aktien Ticker-Symbol eingeben (z.B. AAPL, MSFT, MBG.DE, BMW.DE, VOW3.DE ):", "MSFT")
 
 
 ticker = yf.Ticker(ticker_symbol)
