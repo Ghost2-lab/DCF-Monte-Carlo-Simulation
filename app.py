@@ -252,9 +252,9 @@ implied_price_year_10 = round(projection_df.loc[10, "Implied Share Price"], 2)
 st.write(f"Heutiger Aktienkurs: {current_share_price}")
 col1, col2 = st.columns(2)
 with col1:
-    st.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
+    st.write(f"Innerer Aktienwert in 5 Jahren: {implied_price_year_5}")
 with col2:
-    st.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
+    st.write(f"Innerer Aktienwert in 10 Jahren: {implied_price_year_10}")
 
 with col1:
     if implied_price_year_5 < current_share_price:
@@ -482,7 +482,7 @@ current_price_percentile = (np.sum(np.array(implied_prices) < current_share_pric
 
 # Define the histogram with percentile lines
 hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
-    alt.X("Implied Prices:Q", bin=alt.Bin(maxbins=20), title="Implizierter Aktienkurs"),
+    alt.X("Implied Prices:Q", bin=alt.Bin(maxbins=20), title="Innerer Aktienwert"),
     alt.Y("count():Q", title="Häufigkeit"),
     tooltip=["count()"]
 ).properties(
@@ -608,12 +608,12 @@ else:
 # Sidebar Monte Carlo Simulation
 st.sidebar.header("Monte Carlo Simulation")
 st.sidebar.write(f"Prognose für Jahr {valuation_year}")
-st.sidebar.write(f"⌀implizierter Aktienkurs: {mean_implied_price:.2f}")
+st.sidebar.write(f"⌀ Innerer Aktienwert: {mean_implied_price:.2f}")
 st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
 # Sidebar Classic DCF
 st.sidebar.header("Classic DCF")
-st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
-st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
+st.sidebar.write(f"Innerer Aktienwert in 5 Jahren: {implied_price_year_5}")
+st.sidebar.write(f"Innerer Aktienwert in 10 Jahren: {implied_price_year_10}")
 
 
 
