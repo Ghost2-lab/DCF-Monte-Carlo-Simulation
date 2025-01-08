@@ -11,6 +11,20 @@ import altair as alt
 # Section 1: Gather Data
 # --------------------------------------------
 st.title("Monte Carlo Simulation - DCF")
+with st.expander("Abstract"):
+    st.write(
+        """
+        <div style="text-align: justify;">
+        Das Ziel dieser Ausarbeitung besteht darin, Entscheidungsträgern eine bessere Informationsgrundlage für die Entscheidungsfindung im Zusammenhang mit Aktieninvestitionen zu bieten. Häufig liefern klassische Investitionsrechnungsverfahren nicht ausreichend Informationen, um das Risiko und die Rendite einer Investition angemessen zu bewerten. Das vorgestellte Modell soll daher helfen, fundierte Entscheidungen bei der Verwaltung von Finanzanlagen zu treffen.
+
+        
+        Zur Durchführung der Analyse kommen zwei Methoden zum Einsatz: Das Discounted Cash Flow (DCF)-Verfahren als eine fundamentale Analyse sowie die Monte-Carlo-Simulation als eine quantitative Analyse. Mithilfe des DCF-Verfahrens wird der innere Wert des Unternehmens ermittelt, woraufhin der innere Aktienwert berechnet wird.
+
+        Die Ergebnisse des DCF-Verfahrens liefern Informationen über die erwartete Rendite ab dem jeweiligen Jahr. Die Monte-Carlo-Simulation hingegen liefert zusätzliche Erkenntnisse über die Wahrscheinlichkeit und Investitionsdauer, ab der die Aktie als über- bzw. unterbewertet angesehen werden kann, indem ganzheitlich Chancen und Risiken betrachtet werden. Darüber hinaus zeigen die Ergebnisse der simulationsbasierten Analyse, dass sich die relevanten Hebel je nach Zeitpunkt verändern. Diese Erkenntnisse helfen den Entscheidungsträgern dabei, fundierte Entscheidungen bei der Verwaltung ihrer Finanzanlagen zu treffen und die Risiken und Chancen im Zusammenhang mit Aktieninvestitionen besser zu verstehen.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 st.header("Schritt 1 - Daten aus yfinance sammeln:")
 
 # # Replace text_input with selectbox to choose exactly one ticker
@@ -78,11 +92,53 @@ data["EBIT Margin"] = data["EBIT"] / data["Revenue"]
 
 st.write("Historische Daten:")
 st.dataframe(data)
+with st.expander("Erklärung:"):
+    st.write(
+    """
+    <div style="text-align: justify;">
+    Im ersten Schritt wird die Grundlage für die Analyse durch das Sammeln historischer Finanzdaten eines Unternehmens geschaffen.
+    Über die `yfinance`-Bibliothek werden wichtige finanzielle Kennzahlen, wie Umsatz, EBIT, Steueraufwand, Abschreibungen, 
+    Investitionen und Kapitalstruktur, extrahiert. Diese Daten bilden die Basis für die Berechnung von Wachstumstrends und Margen, 
+    welche entscheidend für die Discounted-Cashflow-(DCF)-Projektionen sind.
+
+    Die Berechnung des freien Cashflows erfolgt gemäß folgender Formel:
+    
+    **Umsatz**  
+    \* **Marge**  
+    = **EBIT**  
+    \- **Steueraufwand**  
+    = **Nettoüberschuss für weitere Geschäftstätigkeiten**  
+    \+ **Abschreibung und Amortisation**  
+    \- **Investitionen in das Anlagevermögen**  
+    \- **Änderungen des Working Capital**  
+    = **Freier Cashflow**
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # --------------------------------------------
 # Section 2: Define Variables
 # --------------------------------------------
 st.header("Schritt 2 - Definiere Annahmen:")
+st.write(
+    """
+    <div style="text-align: justify;">
+    Treffe Annahmen, die für die Berechnungen der zukünftigen Cashflows erforderlich sind. 
+    
+    Hierzu gehören:
+
+    - **Weighted Average Cost of Capital (WACC):** Ein entscheidender Diskontierungssatz, der sowohl das Risiko als auch die erwartete Rendite reflektiert.
+    - **Terminal Growth Rate (TGR):** Die angenommene ewige Wachstumsrate für den Restwert des Unternehmens.
+    - **Wachstumsraten und Margen:** Durchschnittswerte basierend auf historischen Daten des Unternehmens und der Branche.
+
+    Benutzer haben die Möglichkeit, die Standardannahmen anzupassen, um Szenarien zu simulieren, die entweder optimistische oder konservative Bedingungen widerspiegeln. 
+    Dies erlaubt eine flexible Bewertung des Unternehmenswertes.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 with st.expander("Annahmen anpassen"):
     wacc = st.number_input("WACC (Weighted Average Cost of Capital):", value=0.08)
@@ -228,6 +284,43 @@ with col2:
             unsafe_allow_html=True,
         )
 
+with st.expander("Erklärung:"):
+    st.write(
+    """
+    <div style="text-align: justify;">
+    Basierend auf den definierten Annahmen und den historischen Daten werden zukünftige Cashflows über einen Zeitraum von zehn Jahren projiziert. 
+    Diese Projektionen umfassen:
+
+    - **Umsatzwachstum:** Prognose des zukünftigen Unternehmensumsatzes.
+    - **EBIT und Nettogewinn:** Berechnung unter Berücksichtigung der erwarteten Steuerlast.
+    - **Abschreibungen und Investitionen:** Umrechnung auf Free Cashflows.
+
+    Die Berechnung des gesamten Unternehmenswerts erfolgt gemäß der folgenden Formel:
+
+     \[
+    GUW = UW + RW = \sum_{t=1}^{n} \frac{FCF_t}{(1 + WACC)^t} + \frac{1}{(1 + WACC)^n} \cdot \left( \frac{FCF_{n+1}}{WACC - g} \right)
+    \]
+
+    Dabei steht:
+    - \(GUW\): Gesamtunternehmenswert
+    - \(UW\): Unternehmenswert durch diskontierte Free Cashflows
+    - \(RW\): Restwert des Unternehmens
+    - \(FCF_t\): Freier Cashflow im Jahr \(t\)
+    - \(WACC\): Gewichtete durchschnittliche Kapitalkosten
+    - \(g\): Ewige Wachstumsrate
+
+    Aus dem Gesamtunternehmenswert wird der **innere Aktienwert** berechnet, indem folgende Schritte durchgeführt werden:
+
+    **Gesamtunternehmenswert**  
+    \+ **Cash und Beteiligungen**  
+    \- **Nettoverschuldung**  
+    = **Eigenkapitalwert**  
+    \% **Anzahl der Aktien**  
+    = **Innerer Aktienwert [€]**
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # --------------------------------------------
 # Section 4: Monte Carlo Simulation
@@ -423,7 +516,24 @@ legend = alt.Chart(line_data).mark_point(size=100).encode(
 st.altair_chart(hist + vertical_lines,use_container_width=True)
 # Display current price percentile
 st.write(f"Der heutige Aktienkurs liegt im {current_price_percentile:.2f}. Perzentil des Histogramms.")
+with st.expander("Erklärung:"):
+    st.write(
+    """
+    <div style="text-align: justify;">
+    Dieser Schritt erweitert das klassische DCF-Verfahren um eine stochastische Analyse. Anstatt feste Werte für Wachstumsraten, Margen oder WACC zu verwenden, 
+    werden Wahrscheinlichkeitsverteilungen implementiert, um die Unsicherheit dieser Parameter zu modellieren.
 
+    Die Monte-Carlo-Simulation generiert eine Vielzahl von Szenarien durch zufällige Ziehungen aus den definierten Verteilungen. Hierdurch können die Wahrscheinlichkeiten für verschiedene Ergebnisse berechnet werden, wie:
+
+    - **Unter- oder Überbewertung der Aktie:** Identifizierung von Preispunkten, bei denen eine Investition sinnvoll erscheint.
+    - **Risikobewertung:** Ermittlung der Wahrscheinlichkeit von Verlusten oder Gewinnen unter unterschiedlichen Bedingungen.
+
+    Die Kombination der Berechnung des freien Cashflows, des inneren Aktienwerts und der Monte-Carlo-Simulation ermöglicht eine realistischere und differenziertere Analyse, 
+    da nicht nur Mittelwerte, sondern auch Extremwerte und Varianzen berücksichtigt werden.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # Sensitivity Pie Chart
 st.subheader("Sensitivitätsanalyse")
 variables = ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"]
@@ -458,8 +568,26 @@ pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
 
 st.altair_chart(pie_chart, use_container_width=True)
 
+with st.expander("Erklärung:"):
+    st.write(
+    """
+    <div style="text-align: justify;">
+    Die Sensitivitätsanalyse untersucht die Auswirkungen von Änderungen der Eingabevariablen auf die Zielgrößen, wie z. B. den inneren Aktienwert. 
+    Hierbei wird analysiert, wie empfindlich die Ergebnisse auf Schwankungen einzelner Variablen reagieren, während alle anderen Faktoren konstant bleiben.
 
+    **Zweck der Sensitivitätsanalyse:**
+    - Identifikation der Schlüsselvariablen, die den größten Einfluss auf den inneren Aktienwert haben.
+    - Quantifizierung der Risiken, die mit Änderungen dieser Variablen verbunden sind.
+    - Unterstützung bei der Priorisierung, welche Faktoren besonders überwacht werden sollten.
 
+    In klassischen DCF-Verfahren zeigt die Sensitivitätsanalyse beispielsweise, dass die Marge und der WACC oft die größten Einflüsse haben. 
+    Im simulationsbasierten Ansatz können jedoch auch andere Variablen, wie das Umsatzwachstum, je nach Zeitraum und Szenario stärker ins Gewicht fallen.
+
+    Die Ergebnisse der Sensitivitätsanalyse ermöglichen es Entscheidungsträgern, gezielt Maßnahmen zu ergreifen, um Risiken zu minimieren oder Chancen zu nutzen.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # --------------------------------------------
@@ -486,6 +614,10 @@ st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
 st.sidebar.header("Classic DCF")
 st.sidebar.write(f"Implizierter Aktienkurs in 5 Jahren: {implied_price_year_5}")
 st.sidebar.write(f"Implizierter Aktienkurs in 10 Jahren: {implied_price_year_10}")
+
+
+
+
 
 
 
