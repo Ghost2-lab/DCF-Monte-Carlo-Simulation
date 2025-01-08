@@ -612,8 +612,8 @@ st.sidebar.write(f"⌀ Innerer Aktienwert: {mean_implied_price:.2f}")
 st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
 # Sidebar Classic DCF
 st.sidebar.header("Classic DCF")
-st.sidebar.write(f"Innerer Aktienwert in 5 Jahren: {implied_price_year_5}")
-st.sidebar.write(f"Innerer Aktienwert in 10 Jahren: {implied_price_year_10}")
+st.sidebar.write(f"Innerer Aktienwert (5 Jahren): {implied_price_year_5}")
+st.sidebar.write(f"Innerer Aktienwert (10 Jahren): {implied_price_year_10}")
 
 
 
