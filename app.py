@@ -486,7 +486,7 @@ hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
     alt.Y("count():Q", title="Häufigkeit"),
     tooltip=["count()"]
 ).properties(
-    title=f"Histogramm der inneren Aktienwert im Jahr {valuation_year}",
+    title=f"Histogramm des inneren Aktienwerts für den Investitionszeitraum von {valuation_year} Jahren",
     width=600,
     height=400
 )
