@@ -259,13 +259,13 @@ with col2:
 with col1:
     if implied_price_year_5 < current_share_price:
         st.write(
-            "Bewertung im 5. Jahr:",
+            "Bewertung 5-Jahres-Periode:",
             f'<span style="color:red;">***Überbewertet***</span>',
             unsafe_allow_html=True,
         )
     else:
         st.write(
-            "Bewertung im 5. Jahr:",
+            "Bewertung 5-Jahres-Periode:",
             f'<span style="color:green;">***Unterbewertet***</span>',
             unsafe_allow_html=True,
         )
@@ -273,13 +273,13 @@ with col1:
 with col2:
     if implied_price_year_10 < current_share_price:
         st.write(
-            "Bewertung im 10. Jahr:",
+            "Bewertung 10-Jahres-Periode:",
             f'<span style="color:red;">***Überbewertet***</span>',
             unsafe_allow_html=True,
         )
     else:
         st.write(
-            "Bewertung im 10. Jahr:",
+            "Bewertung 10-Jahres-Periode:",
             f'<span style="color:green;">***Unterbewertet***</span>',
             unsafe_allow_html=True,
         )
@@ -468,11 +468,11 @@ cols[0].write(f"Heutiger Aktienkurs: {current_share_price:.2f}")
 cols[1].write(f"Bewertung: {valuation}", unsafe_allow_html=True)
 
 cols = st.columns(2)
-cols[0].write(f"⌀ impliziter Aktienkurs: {mean_implied_price:.2f}")
+cols[0].write(f"⌀ innerer Aktienwert: {mean_implied_price:.2f}")
 cols[1].write(f"Standardabweichung: {std_implied_price:.2f}")
 
 # Prepare the data for Altair
-hist_data = pd.DataFrame({"Implied Prices": implied_prices})
+hist_data = pd.DataFrame({"Innerer Aktienwert": implied_prices})
 
 # Calculate percentiles
 percentile_10 = np.percentile(implied_prices, 10)
@@ -482,11 +482,11 @@ current_price_percentile = (np.sum(np.array(implied_prices) < current_share_pric
 
 # Define the histogram with percentile lines
 hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
-    alt.X("Implied Prices:Q", bin=alt.Bin(maxbins=20), title="Innerer Aktienwert"),
+    alt.X("Innerer Aktienwert:Q", bin=alt.Bin(maxbins=20), title="Innerer Aktienwert"),
     alt.Y("count():Q", title="Häufigkeit"),
     tooltip=["count()"]
 ).properties(
-    title=f"Histogramm der impliziten Aktienkurse im Jahr {valuation_year}",
+    title=f"Histogramm der inneren Aktienwert im Jahr {valuation_year}",
     width=600,
     height=400
 )
@@ -501,7 +501,7 @@ line_data = pd.DataFrame({
 
 # Add vertical lines
 vertical_lines = alt.Chart(line_data).mark_rule(strokeDash=[5, 5]).encode(
-    x=alt.X("Position:Q", title="Implied Prices"),
+    x=alt.X("Position:Q", title="Innerer Aktienwert"),
     color=alt.Color("Color:N", scale=None, legend=None),  # Custom colors
     tooltip=["Label:N", "Position:Q"]  # Add tooltips for better interactivity
 )
@@ -515,7 +515,7 @@ legend = alt.Chart(line_data).mark_point(size=100).encode(
 # Combine histogram, vertical lines, and legend
 st.altair_chart(hist + vertical_lines,use_container_width=True)
 # Display current price percentile
-st.write(f"Der heutige Aktienkurs liegt im {current_price_percentile:.2f}. Perzentil des Histogramms.")
+st.write(f"Der heutige Aktienkurs [in rot] liegt im {current_price_percentile:.2f}-Perzentil des Histogramms.")
 with st.expander("Erklärung:"):
     st.write(
     """
@@ -607,14 +607,13 @@ else:
     )
 # Sidebar Monte Carlo Simulation
 st.sidebar.header("Monte Carlo Simulation")
-st.sidebar.write(f"Prognose für Jahr {valuation_year}")
+st.sidebar.write(f"Prognose für den Investitionszeitraum von {valuation_year} Jahren:")
 st.sidebar.write(f"⌀ Innerer Aktienwert: {mean_implied_price:.2f}")
 st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
 # Sidebar Classic DCF
-st.sidebar.header("Classic DCF")
+st.sidebar.header("Klassischer DCF-Verfahren")
 st.sidebar.write(f"Innerer Aktienwert (5 Jahren): {implied_price_year_5}")
 st.sidebar.write(f"Innerer Aktienwert (10 Jahren): {implied_price_year_10}")
-
 
 
 
