@@ -572,18 +572,19 @@ with st.expander("Erklärung:"):
     st.write(
     """
     <div style="text-align: justify;">
-    Die Sensitivitätsanalyse untersucht die Auswirkungen von Änderungen der Eingabevariablen auf die Zielgrößen, wie z. B. den inneren Aktienwert. 
-    Hierbei wird analysiert, wie empfindlich die Ergebnisse auf Schwankungen einzelner Variablen reagieren, während alle anderen Faktoren konstant bleiben.
+    Die Sensitivitätsanalyse in der Monte-Carlo-Simulation analysiert den Einfluss der Varianz einzelner Eingabevariablen auf die Zielgrößen, wie den inneren Aktienwert. 
+    Hierbei wird untersucht, welche Variablen den größten Beitrag zur Streuung der Ergebnisse leisten.
 
-    **Zweck der Sensitivitätsanalyse:**
-    - Identifikation der Schlüsselvariablen, die den größten Einfluss auf den inneren Aktienwert haben.
-    - Quantifizierung der Risiken, die mit Änderungen dieser Variablen verbunden sind.
-    - Unterstützung bei der Priorisierung, welche Faktoren besonders überwacht werden sollten.
+    **Ziele der Sensitivitätsanalyse:**
+    - Bestimmung der Schlüsselvariablen, die die höchste Varianz im Ergebnis verursachen.
+    - Quantifizierung der Unsicherheiten, die mit den Schwankungen dieser Variablen verbunden sind.
+    - Unterstützung bei der Optimierung und Fokussierung auf kritische Parameter zur Risikominderung.
 
-    In klassischen DCF-Verfahren zeigt die Sensitivitätsanalyse beispielsweise, dass die Marge und der WACC oft die größten Einflüsse haben. 
-    Im simulationsbasierten Ansatz können jedoch auch andere Variablen, wie das Umsatzwachstum, je nach Zeitraum und Szenario stärker ins Gewicht fallen.
+    Im simulationsbasierten Ansatz zeigt die Sensitivitätsanalyse, dass je nach Szenario und Zeitrahmen unterschiedliche Variablen, wie Umsatzwachstum oder WACC, 
+    dominierend sein können. Die Varianzbeiträge der Variablen bieten dabei wertvolle Einblicke, um die wichtigsten Hebel für fundierte Entscheidungen zu identifizieren.
 
-    Die Ergebnisse der Sensitivitätsanalyse ermöglichen es Entscheidungsträgern, gezielt Maßnahmen zu ergreifen, um Risiken zu minimieren oder Chancen zu nutzen.
+    Die Ergebnisse ermöglichen es Entscheidungsträgern, potenzielle Chancen besser zu bewerten und gleichzeitig Risiken gezielt zu steuern, 
+    indem die Analyse sowohl kurzfristige als auch langfristige Auswirkungen berücksichtigt.
     </div>
     """,
     unsafe_allow_html=True
