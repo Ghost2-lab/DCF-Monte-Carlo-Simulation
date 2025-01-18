@@ -5,11 +5,6 @@ import pandas as pd
 import numpy as np
 import altair as alt
 
-
-
-# --------------------------------------------
-# Section 1: Gather Data
-# --------------------------------------------
 st.title("Monte Carlo Simulation - DCF")
 with st.expander("Abstract"):
     st.write(
@@ -27,25 +22,21 @@ with st.expander("Abstract"):
     )
 st.header("Schritt 1 - Daten aus yfinance sammeln:")
 
-# # Replace text_input with selectbox to choose exactly one ticker
-# all_tickers = ["BMW.DE", "VOW3.DE", "MBG.DE"]
-# ticker_symbol = st.selectbox("Wähle einen Ticker aus:", all_tickers, index=2)
 ticker_symbol = st.text_input("Aktien Ticker-Symbol eingeben (z.B. AAPL, MSFT, MBG.DE, BMW.DE, VOW3.DE ):", "MSFT")
 
 
 ticker = yf.Ticker(ticker_symbol)
 
-income_statement = ticker.financials.T  # Yearly
-balance_sheet = ticker.balance_sheet.T  # Yearly
-cashflow_statement = ticker.cashflow.T  # Yearly
+income_statement = ticker.financials.T  
+balance_sheet = ticker.balance_sheet.T  
+cashflow_statement = ticker.cashflow.T  
 
-# Current share price
+
 try:
     current_share_price = ticker.info["currentPrice"]
 except:
     current_share_price = float("nan")
 
-# Attempt to get 'number_of_shares'
 if balance_sheet.empty:
     st.warning("Keine Bilanzdaten (Balance Sheet) vorhanden.")
     number_of_shares = 1
@@ -56,7 +47,6 @@ else:
     except:
         number_of_shares = 1
 
-# Extract columns needed for DCF
 try:
     revenue = income_statement["Total Revenue"]
     ebit = income_statement["EBIT"]
@@ -71,7 +61,6 @@ except KeyError:
     st.error("Für diesen Ticker fehlen wichtige Daten für die DCF-Berechnung.")
     st.stop()
 
-# Build main data DataFrame
 data = pd.DataFrame(
     {
         "Revenue": revenue,
@@ -83,7 +72,7 @@ data = pd.DataFrame(
         "Debt": debt,
     }
 )
-data = data.sort_index(ascending=True)  # Sort by date ascending
+data = data.sort_index(ascending=True)  
 
 data["Revenue Growth Rate"] = (
     (data["Revenue"] - data["Revenue"].shift(1)) / data["Revenue"].shift(1)
@@ -118,9 +107,8 @@ with st.expander("Erklärung:"):
     unsafe_allow_html=True
 )
 
-# --------------------------------------------
-# Section 2: Define Variables
-# --------------------------------------------
+
+
 st.header("Schritt 2 - Definiere Annahmen:")
 st.write(
     """
@@ -165,9 +153,9 @@ with st.expander("Annahmen anpassen"):
 cash_avg = data["Cash"].mean()
 debt_avg = data["Debt"].mean()
 
-# --------------------------------------------
-# Section 3: Projection (Classic DCF)
-# --------------------------------------------
+
+
+
 st.header("Schritt 3 - Finanzielle Projektion:")
 
 newest_revenue = data["Revenue"].iloc[-1]
@@ -240,7 +228,8 @@ projection_df["Implied Share Price"] = (
 st.write("Projektionsergebnisse:")
 st.dataframe(projection_df)
 
-# Compare Implied Share Price with Current Share Price
+
+
 try:
     current_share_price = round(current_share_price, 2)
 except:
@@ -322,9 +311,9 @@ with st.expander("Erklärung:"):
     unsafe_allow_html=True
 )
 
-# --------------------------------------------
-# Section 4: Monte Carlo Simulation
-# --------------------------------------------
+
+
+
 st.header("Schritt 4 - Monte Carlo Simulation")
 
 def get_distribution_params_lognormal(name, default_mean, default_sigma, default_max):
@@ -362,7 +351,7 @@ with st.expander("Verteilungsparameter anpassen"):
         "Umsatzwachstum - Std. Abw.", value=abs(growth_rate_avg) * 0.1, key="growth_rate_std"
     )
 
-    # Lognormal for TGR with (mean in log-space, sigma, max-clip)
+
     st.markdown("### Lognormal-Verteilung (TGR)")
     tgr_mean_log, tgr_sigma, tgr_max = get_distribution_params_lognormal(
         "TGR",
@@ -371,7 +360,6 @@ with st.expander("Verteilungsparameter anpassen"):
         default_max=tgr * 1.2      # max cap for TGR
     )
 
-    # Triangular for WACC, Margin, Tax Rate, Depreciation, Reinvestment
     st.markdown("### Dreieck-Verteilungen")
     wacc_left, wacc_mode, wacc_right = get_distribution_params_triangular(
         "WACC", wacc*0.8, wacc, wacc*1.2
@@ -389,7 +377,7 @@ with st.expander("Verteilungsparameter anpassen"):
         "Investitionsrate", reinvestment_rate*0.8, reinvestment_rate, reinvestment_rate*1.2
     )
 
-# Generate distributions
+
 wacc_dist = np.random.triangular(
     left=wacc_left, mode=wacc_mode, right=wacc_right, size=n_simulations
 )
@@ -409,9 +397,8 @@ reinv_dist = np.random.triangular(
     left=reinv_left, mode=reinv_mode, right=reinv_right, size=n_simulations
 )
 
-# Now the lognormal TGR with mean = tgr_mean_log, sigma = tgr_sigma, clipped at tgr_max
+
 raw_tgr_dist = np.random.lognormal(mean=tgr_mean_log, sigma=tgr_sigma, size=n_simulations)
-# Clip TGR to not exceed tgr_max
 tgr_dist = np.clip(raw_tgr_dist, 0, tgr_max)
 
 implied_prices = []
@@ -425,7 +412,6 @@ for i in range(n_simulations):
     simulated_dep = dep_dist[i]
     simulated_reinv = reinv_dist[i]
 
-    # Project each year up to valuation_year
     rev = newest_revenue
     total_dcf = 0.0
 
@@ -440,7 +426,6 @@ for i in range(n_simulations):
         discounted_fcf = fcf / ((1 + simulated_wacc) ** yr)
         total_dcf += discounted_fcf
 
-    # Terminal value
     fcf_terminal = fcf * (1 + simulated_tgr)
     if (simulated_wacc - simulated_tgr) > 0:
         terminal_value = fcf_terminal / (simulated_wacc - simulated_tgr)
@@ -449,7 +434,6 @@ for i in range(n_simulations):
 
     discounted_terminal_value = terminal_value / ((1 + simulated_wacc) ** valuation_year)
 
-    # Sum firm value
     total_firm_value = total_dcf + discounted_terminal_value + cash_avg - debt_avg
     implied_share_price = total_firm_value / number_of_shares
     implied_prices.append(implied_share_price)
@@ -471,16 +455,13 @@ cols = st.columns(2)
 cols[0].write(f"⌀ innerer Aktienwert: {mean_implied_price:.2f}")
 cols[1].write(f"Standardabweichung: {std_implied_price:.2f}")
 
-# Prepare the data for Altair
 hist_data = pd.DataFrame({"Innerer Aktienwert": implied_prices})
 
-# Calculate percentiles
 percentile_10 = np.percentile(implied_prices, 10)
 percentile_90 = np.percentile(implied_prices, 90)
 current_price_percentile = (np.sum(np.array(implied_prices) < current_share_price) / len(implied_prices)) * 100
 
 
-# Define the histogram with percentile lines
 hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
     alt.X("Innerer Aktienwert:Q", bin=alt.Bin(maxbins=20), title="Innerer Aktienwert"),
     alt.Y("count():Q", title="Häufigkeit"),
@@ -492,29 +473,25 @@ hist = alt.Chart(hist_data).mark_bar(opacity=0.7).encode(
 )
 
 
-# Data for vertical lines with labels
 line_data = pd.DataFrame({
     "Position": [percentile_10, percentile_90, current_share_price],
     "Label": ["10-Perzentile", "90-Perzentile", "Heutiger Preis"],
     "Color": ["yellow", "green", "red"]
 })
 
-# Add vertical lines
 vertical_lines = alt.Chart(line_data).mark_rule(strokeDash=[5, 5]).encode(
     x=alt.X("Position:Q", title="Innerer Aktienwert"),
     color=alt.Color("Color:N", scale=None, legend=None),  # Custom colors
     tooltip=["Label:N", "Position:Q"]  # Add tooltips for better interactivity
 )
 
-# Create a custom legend using points
 legend = alt.Chart(line_data).mark_point(size=100).encode(
     y=alt.Y("Label:N", axis=alt.Axis(title="Legend", labels=True)),
     color=alt.Color("Color:N", scale=None)  # Match custom colors
 ).properties(width=150)
 
-# Combine histogram, vertical lines, and legend
+
 st.altair_chart(hist + vertical_lines,use_container_width=True)
-# Display current price percentile
 st.write(f"Der heutige Aktienkurs [in rot] liegt im {current_price_percentile:.2f}-Perzentil des Histogramms.")
 with st.expander("Erklärung:"):
     st.write(
@@ -534,6 +511,7 @@ with st.expander("Erklärung:"):
     """,
     unsafe_allow_html=True
 )
+    
 # Sensitivity Pie Chart
 st.subheader("Sensitivitätsanalyse")
 variables = ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"]
@@ -549,13 +527,11 @@ variances = [
 total_variance = sum(variances)
 percentages = [(var / total_variance) * 100 if total_variance != 0 else 0 for var in variances]
 
-# Prepare data for pie chart
 pie_data = pd.DataFrame({
     "Variable": ["Umsatzwachstum", "Marge", "TGR", "A&A", "Investition", "WACC", "Steuersatz"],
     "Percentage": percentages
 })
 
-# Create the pie chart
 pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
     theta="Percentage:Q",
     color="Variable:N",
@@ -591,9 +567,8 @@ with st.expander("Erklärung:"):
 )
 
 
-# --------------------------------------------
+
 # Sidebar
-# --------------------------------------------
 st.sidebar.title(f"Aktie: {ticker_symbol}")
 st.sidebar.write(f"Heutiger Aktienkurs: {current_share_price:.2f}")
 if mean_implied_price < current_share_price:
@@ -606,12 +581,11 @@ else:
         f"Basierend auf den getroffenen Annahmen und Investitionszeitraum von {valuation_year} Jahren ist die Aktie mit einer Wahrscheinlichkeit von {100 - current_price_percentile:.2f}% {valuation}.",
         unsafe_allow_html=True,
     )
-# Sidebar Monte Carlo Simulation
 st.sidebar.header("Monte Carlo Simulation")
 st.sidebar.write(f"Prognose für den Investitionszeitraum von {valuation_year} Jahren:")
 st.sidebar.write(f"⌀ Innerer Aktienwert: {mean_implied_price:.2f}")
 st.sidebar.write(f"Standardabweichung: {std_implied_price:.2f}")
-# Sidebar Classic DCF
+
 st.sidebar.header("Klassischer DCF-Verfahren")
 st.sidebar.write(f"Innerer Aktienwert (5 Jahren): {implied_price_year_5}")
 st.sidebar.write(f"Innerer Aktienwert (10 Jahren): {implied_price_year_10}")
